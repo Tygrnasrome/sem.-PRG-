@@ -10,6 +10,8 @@ namespace Calculator
 	{	
 		public string Type { get; set; }
 		public int Priority { get; set; }
+
+		public int ArgumentsNumber { get; set; }
 		public Relation(string type, int priority)
 		{
 			Type = type;
@@ -24,6 +26,11 @@ namespace Calculator
 					Priority++;
 					break;
 			}
+			if(Type == "sqrt")
+			{
+				ArgumentsNumber = 1;
+			}else
+				ArgumentsNumber = 2;
 		}
 		public double Calculate(double a,  double b)
 		{

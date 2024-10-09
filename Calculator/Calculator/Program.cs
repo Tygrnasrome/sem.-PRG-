@@ -194,9 +194,28 @@ namespace Calculator
 				return false;
 			}
 
-			
+
 			//todo
 			//actual vypocet
+			int maxPriority = 0;
+			foreach (Relation relation in Program.relations)
+				maxPriority = Math.Max(relation.Priority, maxPriority);
+
+			for (int i = maxPriority; i > 0; i--)
+			{
+				for (int index = 0;index < Program.relations.Length;index++)
+				{
+					if (Program.relations[index].Priority == i)
+					{
+						if (Program.relations[index].ArgumentsNumber == 2)
+						{
+							Program.values[index] = Program.relations[index].Calculate(Program.values[index], Program.values[index + 1]);
+							Program.values[index].
+						}
+						else
+							Program.values[index+1] = Program.relations[index].Calculate(Program.values[index+1], 0);
+					}
+			}
 			return true;
 		}
 	}
