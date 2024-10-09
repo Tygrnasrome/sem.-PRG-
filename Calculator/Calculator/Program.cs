@@ -33,26 +33,31 @@ namespace Calculator
 
     internal class Program
     {
-		static double[] values = {};
-		static Relation[] relations = {};
-		static string[] words = { };
+		//static double[] values = {};
+		//static Relation[] relations = {};
+		//static string[] words = { };
 
+		static List<double> values = new List<double>();
+		static List<Relation> relations = new List<Relation>();
+		static List<string> words = new List<string>();
 		static Dictionary<string, double> variables = new Dictionary<string, double>();
 
 		static bool newWordUsage = false;
+		static bool keepRunning = true;
 		static void Main(string[] args)
         {
             Console.WriteLine("kalkulacka\n" );
 
             String input = "";
 
-
-            do	//zadani vstupu dokud nebude spravny
-            {
-                Console.WriteLine("zadej priklad nebo nastav promennou");
-                input = Console.ReadLine();
-            } while (TryParseInput(input) && TryCalculate());
-
+			while (keepRunning)
+			{
+				do  //zadani vstupu dokud nebude spravny
+				{
+					Console.WriteLine("zadej priklad nebo nastav promennou");
+					input = Console.ReadLine();
+				} while (TryParseInput(input) && TryCalculate());
+			}
 
 			Console.ReadKey();
         }
@@ -69,9 +74,9 @@ namespace Calculator
 			int priority = 0; // jedna se pouze o prioritu zavorek, priorita matematickych operaci resi trida relation
 
 			// mazani starych dat
-			Array.Clear(Program.values, 0, Program.values.Length);
-			Array.Clear(Program.relations, 0, Program.relations.Length);
-			Array.Clear(Program.words, 0, Program.words.Length);
+			Program.values.Clear();
+			Program.relations.Clear();
+			Program.words.Clear();
 
 			//precte vstup a vrati true pokud byl vstup platny
 
@@ -83,14 +88,16 @@ namespace Calculator
 				
 				if ((c >= 48 && c < 58) || c=='.')
 				{//cislo
-					Console.WriteLine($"number detect {word} {number} {c}");
+					//Console.WriteLine($"number detect {word} {number} {c}"); debug
 					number += c;
 					c = ' ';
 				}else if (number!= "")
 				{
-					Program.values.Append(Convert.ToDouble(number));
+					Program.values.Add(Convert.ToDouble(number));
 					number = "";
 				}
+				
+					
 				wordChange = false;
 				switch (c)
 				{
@@ -101,7 +108,7 @@ namespace Calculator
 					case '^':
 					case '=':
 						string type = "";
-						Program.relations.Append(new Relation(type += c, priority)); //nevim jak jednoduseji konvertovat char na string
+						Program.relations.Add(new Relation(type += c, priority)); //nevim jak jednoduseji konvertovat char na string
 						break;
 					case '('://priorita zavorek
 						priority += 2;
@@ -127,38 +134,69 @@ namespace Calculator
 					switch (word)
 					{
 						case "sqrt":
-							Program.relations.Append(new Relation(word, priority));
+							Program.relations.Add(new Relation(word, priority));
 							break;
 						default: // pokud je nalezena promenna, tak se nahradi za cislo
-							words.Append(word);
+							words.Add(word);
 							if (!Program.variables.ContainsKey(word))
 							{
 								Console.WriteLine("nova promenna: " + word);
 								newWordUsage = true;
 							}
 							else
-								Program.values.Append(Program.variables[word]);
+								Program.values.Add(Program.variables[word]);
 							break;
 					}
 					word = "";
 				}
 			}
-            return true;
+
+			//pokud skoncil input, ale je to konec slova nebo cisla
+			if (number != "")
+			{
+				Program.values.Add(Convert.ToDouble(number));
+			}
+			if (word != "")
+			{
+				switch (word)
+				{
+					case "sqrt":
+						Program.relations.Add(new Relation(word, priority));
+						break;
+					default: // pokud je nalezena promenna, tak se nahradi za cislo
+						words.Add(word);
+						if (!Program.variables.ContainsKey(word))
+						{
+							Console.WriteLine("nova promenna: " + word);
+							newWordUsage = true;
+						}
+						else
+							Program.values.Add(Program.variables[word]);
+						break;
+				}
+			}
+				
+
+			return true;
         }
 		static bool TryCalculate()
 		{
 			foreach (string word in Program.words)
 			{
-				Console.WriteLine($"s - {word}");
+				Console.WriteLine($"word: {word}");
 			}
 			foreach (double value in Program.values)
 			{
-				Console.WriteLine($"v - {value}");
+				Console.WriteLine($"value: {value}");
+			}
+			foreach (Relation relation in Program.relations)
+			{
+				Console.WriteLine($"Relation: {relation.Type}");
 			}
 			//vrati true - neslo zpracovat 
 			//false - vporadku
 
-			//pokud nastavujeme hodnoty promennych
+			//nastaveni hodnot promennych
 			bool doSetVariables = false;
 			
 			foreach (Relation relation in Program.relations) 
@@ -171,7 +209,7 @@ namespace Calculator
 			{
 				double value = 0;
 				//prirazujeme prvni hodnotu vsem novym promennym
-				if (Program.values.Length >= 1)
+				if (Program.values.Count >= 1)
 					value = Program.values.First();
 				else
 				{
@@ -181,9 +219,11 @@ namespace Calculator
 				
 				foreach (string word in Program.words)
 				{
+					Console.WriteLine($"hodnota {word} nastavena na: {value}");
 					Program.variables.Add(word, value);
 				}
 				Program.newWordUsage = false;
+				return false;
 			}
 			//pokud je vyuzita neznama promenna pripadne nespravny input
 			if (Program.newWordUsage)
@@ -191,32 +231,40 @@ namespace Calculator
 				Console.WriteLine("error: neznama promenna - vyuziti neznamych znaku");
 				Console.WriteLine("hodnoty do promennych se nastavuji:");
 				Console.WriteLine("<nazev promenne> = <hodnota>");
-				return false;
+				return true;
 			}
 
-
-			//todo
-			//actual vypocet
+			//vypocet	
 			int maxPriority = 0;
 			foreach (Relation relation in Program.relations)
+			{ 
 				maxPriority = Math.Max(relation.Priority, maxPriority);
-
-			for (int i = maxPriority; i > 0; i--)
+			}
+			for (int i = maxPriority; i > -1; i--)
 			{
-				for (int index = 0;index < Program.relations.Length;index++)
+				for (int index = 0; index < Program.relations.Count; index++)
 				{
 					if (Program.relations[index].Priority == i)
 					{
 						if (Program.relations[index].ArgumentsNumber == 2)
 						{
+							//pouzije okolni dve hodnoty pro vypocet a vysledek ulozi do prvni
+							//druhou hodnotu pak vymaze
 							Program.values[index] = Program.relations[index].Calculate(Program.values[index], Program.values[index + 1]);
-							Program.values[index].
+							Program.values.RemoveAt(index + 1);
+
 						}
 						else
-							Program.values[index+1] = Program.relations[index].Calculate(Program.values[index+1], 0);
+							//pokud vypocet potrebuje jen jednu hodnotu tak nic nemaze a uklada do nasledujici hodnoty
+							Program.values[index + 1] = Program.relations[index].Calculate(Program.values[index + 1], 0);
+						//nakonec vymaze prvek z listu relaci
+						Program.relations.RemoveAt(index);
+						index--;
 					}
+				}
 			}
-			return true;
+			Console.WriteLine("= " + Program.values[0]);
+			return false;
 		}
 	}
 }
