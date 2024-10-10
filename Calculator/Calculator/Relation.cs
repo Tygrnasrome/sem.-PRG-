@@ -22,8 +22,11 @@ namespace Calculator
 				case "/":
 				case "*":
 				case "^":
-				case "sqrt":
 					Priority++;
+					break;
+				case "sqrt":
+				case "abs":
+					Priority+= 2;
 					break;
 			}
 			if(Type == "sqrt")
@@ -47,7 +50,9 @@ namespace Calculator
 				case "^":
 					return Math.Pow(a, b);
 				case "sqrt":
-					return Math.Sqrt(a);
+					return Math.Sqrt(b);
+				case "abs":
+					return Math.Abs(b);
 				default:
 					throw new NotImplementedException();
 			}

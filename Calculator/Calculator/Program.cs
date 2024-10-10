@@ -110,16 +110,8 @@ namespace Calculator
 						string type = "";
 						Program.relations.Add(new Relation(type += c, priority)); //nevim jak jednoduseji konvertovat char na string
 						break;
-					case '('://priorita zavorek
-						priority += 2;
-						break;
+					case '('://ignorace zavorek
 					case ')':
-						priority -= 2;
-						if (priority < 0)
-						{ 
-							Console.WriteLine("error: neuzavrene zavorky");
-							return false;
-						}
 						break;
 					case ' ': //ignoruj mezery a carky 
 					case ',':
@@ -135,6 +127,11 @@ namespace Calculator
 					{
 						case "sqrt":
 							Program.relations.Add(new Relation(word, priority));
+							Program.values.Add(0);
+							break;
+						case "abs":
+							Program.relations.Add(new Relation(word, priority));
+							Program.values.Add(0);
 							break;
 						default: // pokud je nalezena promenna, tak se nahradi za cislo
 							words.Add(word);
@@ -149,7 +146,22 @@ namespace Calculator
 					}
 					word = "";
 				}
+				switch (c)
+				{
+					case '('://priorita zavorek NUTNO na konci 
+						priority += 3;
+						break;
+					case ')':
+						priority -= 3;
+						if (priority < 0)
+						{
+							Console.WriteLine("error: neuzavrene zavorky");
+							return false;
+						}
+						break;
+				}
 			}
+
 
 			//pokud skoncil input, ale je to konec slova nebo cisla
 			if (number != "")
@@ -162,6 +174,11 @@ namespace Calculator
 				{
 					case "sqrt":
 						Program.relations.Add(new Relation(word, priority));
+						Program.values.Add(0);
+						break;
+					case "abs":
+						Program.relations.Add(new Relation(word, priority));
+						Program.values.Add(0);
 						break;
 					default: // pokud je nalezena promenna, tak se nahradi za cislo
 						words.Add(word);
@@ -191,7 +208,7 @@ namespace Calculator
 			}
 			foreach (Relation relation in Program.relations)
 			{
-				Console.WriteLine($"Relation: {relation.Type}");
+				Console.WriteLine($"Relation: {relation.Type}, prio: {relation.Priority}");
 			}
 			//vrati true - neslo zpracovat 
 			//false - vporadku
@@ -246,7 +263,7 @@ namespace Calculator
 				{
 					if (Program.relations[index].Priority == i)
 					{
-						if (Program.relations[index].ArgumentsNumber == 2)
+						//if (Program.relations[index].ArgumentsNumber == 2)
 						{
 							//pouzije okolni dve hodnoty pro vypocet a vysledek ulozi do prvni
 							//druhou hodnotu pak vymaze
@@ -254,9 +271,9 @@ namespace Calculator
 							Program.values.RemoveAt(index + 1);
 
 						}
-						else
+						//else
 							//pokud vypocet potrebuje jen jednu hodnotu tak nic nemaze a uklada do nasledujici hodnoty
-							Program.values[index + 1] = Program.relations[index].Calculate(Program.values[index + 1], 0);
+							//Program.values[index + 1] = Program.relations[index].Calculate(Program.values[index + 1], 0);
 						//nakonec vymaze prvek z listu relaci
 						Program.relations.RemoveAt(index);
 						index--;
