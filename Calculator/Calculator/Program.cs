@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
@@ -47,21 +48,36 @@ namespace Calculator
 		static bool keepRunning = true;
 		static void Main(string[] args)
         {
-            Console.WriteLine("kalkulacka\n" );
+            Console.WriteLine("Kalkulacka\n");
+			Console.WriteLine("Pro seznam operaci napiste \"help\", pro vypis promennych napiste \"var\"\n");
+
+			variables.Add("PI", Math.PI);
 
             String input = "";
-
+			bool isValidInput = false;
 			while (keepRunning)
 			{
 				do  //zadani vstupu dokud nebude spravny
 				{
-					Console.WriteLine("zadej priklad nebo nastav promennou");
+					Console.WriteLine("Zadej priklad nebo nastav promennou");
 					input = Console.ReadLine();
-				} while (TryParseInput(input) && TryCalculate());
+					ClearConsole(input);
+
+					isValidInput = !TryParseInput(input) || !TryCalculate();
+					
+				} while (isValidInput);
 			}
 
 			Console.ReadKey();
         }
+		static void ClearConsole(string input)
+		{
+			//vymaze konsoli
+			Console.Clear();
+			Console.WriteLine("Kalkulacka\n");
+			Console.WriteLine("Pro seznam operaci napiste \"help\", pro vypis promennych napiste \"var\"\n");
+			Console.WriteLine(input);
+		}
 		static bool TryParseInput(string input)
 		{
 			//vrati true - neslo zpracovat 
@@ -147,14 +163,16 @@ namespace Calculator
 							break;
 						case "help":
 							WriteHelp();
+							words.Add(word);
+							break;
+						case "var":
+							WriteVariables();
+							words.Add(word);
 							break;
 						default: // pokud je nalezena promenna, tak se nahradi za cislo
 							words.Add(word);
 							if (!Program.variables.ContainsKey(word))
-							{
-								Console.WriteLine("nova promenna: " + word);
 								newWordUsage = true;
-							}
 							else
 							{
 								if(isMinusNum)
@@ -185,7 +203,7 @@ namespace Calculator
 						priority -= 3;
 						if (priority < 0)
 						{
-							Console.WriteLine("error: neuzavrene zavorky");
+							Console.WriteLine("> error: neuzavrene zavorky");
 							return false;
 						}
 						break;
@@ -208,6 +226,11 @@ namespace Calculator
 				{
 					case "help":
 						WriteHelp();
+						words.Add(word);
+						break;
+					case "var":
+						WriteVariables();
+						words.Add(word);
 						break;
 					default: // pokud je nalezena promenna, tak se nahradi za cislo
 						words.Add(word);
@@ -246,13 +269,43 @@ namespace Calculator
 			//vrati true - neslo zpracovat 
 			//false - vporadku
 
+			//v pripade ze neni zadana hodnota - error
+			if (Program.values.Count == 0)
+			{
+				bool errorMessage = true;
+				foreach (string word in Program.words)
+				{
+					//nevypise error, pokud je zadan help nebo var
+					if(word == "help" || word == "var")
+						errorMessage = false;
+				}
+				if (errorMessage)
+				{
+					Console.WriteLine("> error: nespravny vstup\n->napis \"help\" - pro vice informaci\n");
+				}
+				return true;
+			}
+			bool output;
+			if(VarSetLogic(out output))
+				return output;
+
+			//realny vypocet
+			return Calculation();
+			
+		}
+		
+		static bool VarSetLogic(out bool output)
+		{
+			//vraci true, pokud je dulezity output
+			//pri false neni output vyuzit
+
 			//nastaveni hodnot promennych
 			bool doSetVariables = false;
-			
-			foreach (Relation relation in Program.relations) 
+
+			foreach (Relation relation in Program.relations)
 			{
 				//musi byt obsazeno '='
-				if(relation.Type == "=")
+				if (relation.Type == "=")
 					doSetVariables = true;
 			}
 			if (doSetVariables)
@@ -263,32 +316,39 @@ namespace Calculator
 					value = Program.values.First();
 				else
 				{
-					Console.WriteLine("error: neni zadana hodnota");
+					Console.WriteLine("> error: neni zadana hodnota");
+					output = true;
 					return true;
 				}
-				
+
 				foreach (string word in Program.words)
 				{
-					Console.WriteLine($"hodnota {word} nastavena na: {value}");
+					Console.WriteLine($"> hodnota {word} nastavena na: {value}\n");
 					Program.variables.Add(word, value);
 				}
 				Program.newWordUsage = false;
-				return false;
+				output = false;
+				return true;
 			}
 			//pokud je vyuzita neznama promenna pripadne nespravny input
 			if (Program.newWordUsage)
 			{
-				Console.WriteLine("error: neznama promenna - vyuziti neznamych znaku");
-				Console.WriteLine("hodnoty do promennych se nastavuji:");
-				Console.WriteLine("<nazev promenne> = <hodnota>");
+				Console.WriteLine("> error: neznama promenna - vyuziti neznamych znaku");
+				Console.WriteLine("> hodnoty do promennych se nastavuji:");
+				Console.WriteLine("> <nazev promenne> = <hodnota>\n");
 				Program.newWordUsage = false;
+				output = true;
 				return true;
 			}
-
+			output = false;
+			return false;
+		}
+		static bool Calculation()
+		{
 			//vypocet	
 			int maxPriority = 0;
 			foreach (Relation relation in Program.relations)
-			{ 
+			{
 				maxPriority = Math.Max(relation.Priority, maxPriority);
 			}
 			for (int i = maxPriority; i > -1; i--)
@@ -296,30 +356,58 @@ namespace Calculator
 				for (int index = 0; index < Program.relations.Count; index++)
 				{
 					if (Program.relations[index].Priority == i)
-					{			
+					{
+						if (Program.values.Count < index+2)
+						{
+							Console.WriteLine("> error: nespravny vstup (moc argumentu na malo cisel)\n->napis \"help\" - pro vice informaci\n");
+							return true;
+						}
 						//pouzije okolni dve hodnoty pro vypocet a vysledek ulozi do prvni
 						//druhou hodnotu pak vymaze
 						Program.values[index] = Program.relations[index].Calculate(Program.values[index], Program.values[index + 1]);
-						Program.values.RemoveAt(index + 1);	
+						Program.values.RemoveAt(index + 1);
 						//nakonec vymaze prvek z listu relaci
 						Program.relations.RemoveAt(index);
 						index--;
 					}
 				}
 			}
+			if (Program.values.Count == 0)
+			{
+				Console.WriteLine("> error: nespravny vstup\n");
+				WriteHelp();
+				return true;
+			}
+
 			Console.WriteLine("= " + Program.values[0]);
 			return false;
 		}
 
+		
+
 		static void WriteHelp()
 		{
+			Console.WriteLine("\n---------------- Help ----------------");
 			Console.WriteLine("Priklad zadejte bez =");
 			Console.WriteLine("Povolene operace: \n+, -, *, /, ^, sqrt(x), abs(x), log(baze,x), sin(x), cos(x), tan(x)");
 			Console.WriteLine("Goniometricke fce jsou v radianech");
-			Console.WriteLine("binary(x) - prevede x do dvojkove soustavy\nnumSystem(base,x) - prevede x do libovolne soustavy");
-			Console.WriteLine("prevody systemu jsou fce a nepodporuji matematicke operace");
+			Console.WriteLine("binary(x) - prevede x do dvojkove soustavy\nnumSystem(base,x) - prevede x do libovolne soustavy o zakladu base 1-9");
+			Console.WriteLine("Prevody systemu jsou fce a nepodporuji matematicke operace");
 			Console.WriteLine("Hodnoty do promennych se nastavuji:");
 			Console.WriteLine("<nazev promenne> = <hodnota>");
+			Console.WriteLine("Pro vypis promennych napiste \"var\"");
+			Console.WriteLine("--------------------------------------\n");
+		}
+		static void WriteVariables()
+		{
+			Console.WriteLine("\n---------------- Promenne ----------------");
+			Console.WriteLine("Ulozene promenne: ");
+			foreach (var variable in Program.variables)
+			{
+				Console.WriteLine(variable.Key + ": " + variable.Value);
+			}
+			Console.WriteLine("\n");
+			Console.WriteLine("------------------------------------------\n");
 		}
 	}
 }

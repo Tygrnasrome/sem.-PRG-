@@ -71,9 +71,10 @@ namespace Calculator
 		}
 		static string NumSystemConvertFromDecimal(int numSystem, int decimalNumber)
 		{
-			//nefunguje na desetinna cisla
+			//nefunguje na desetinna cisla a numSystem > 9
 			// from stack overflow https://stackoverflow.com/questions/2954962/convert-integer-to-binary-in-c-sharp
-			
+			if (numSystem > 9)
+				return "";
 			int remainder;
 			string result = string.Empty;
 			while (decimalNumber > 0)
