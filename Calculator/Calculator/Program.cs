@@ -13,26 +13,7 @@ using System.Threading.Tasks;
  */
 
 namespace Calculator
-{/*
-             * ZADANI
-             * Vytvor program ktery bude fungovat jako kalkulacka. Kroky programu budou nasledujici:
-             * 1) Nacte vstup pro prvni cislo od uzivatele (vyuzijte metodu Console.ReadLine() - https://learn.microsoft.com/en-us/dotnet/api/system.console.readline?view=netframework-4.8.
-             * 2) Zkonvertuje vstup od uzivatele ze stringu do integeru - https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/types/how-to-convert-a-string-to-a-number.
-             * 3) Nacte vstup pro druhe cislo od uzivatele a zkonvertuje ho do integeru. (zopakovani kroku 1 a 2 pro druhe cislo)
-             * 4) Nacte vstup pro ciselnou operaci. Rozmysli si, jak operace nazves. Muze to byt "soucet", "rozdil" atd. nebo napr "+", "-", nebo jakkoliv jinak.
-             * 5) Nadefinuj integerovou promennou result a prirad ji prozatimne hodnotu 0.
-             * 6) Vytvor podminky (if statement), podle kterych urcis, co se bude s cisly dit podle zadane operace
-             *    a proved danou operaci - https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/statements/selection-statements.
-             * 7) Vypis promennou result do konzole
-             * 
-             * Rozsireni programu pro rychliky / na doma (na poradi nezalezi):
-             * 1) Vypis do konzole pred nactenim kazdeho uzivatelova vstupu co po nem chces (aby vedel, co ma zadat)
-             * 2) a) Kontroluj, ze uzivatel do vstupu zadal, co mel (cisla, popr. ciselnou operaci). Pokud zadal neco jineho, napis mu, co ma priste zadat a program ukoncete.
-             * 2) b) To same, co a) ale misto ukonceni programu opakovane cti vstup, dokud uzivatel nezada to, co ma
-             *       - https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-while-statement
-             * 3) Umozni uzivateli zadavat i desetinna cisla, tedy prekopej kalkulacku tak, aby umela pracovat s floaty
-             */
-
+{
     internal class Program
     {
 		//static double[] values = {};
@@ -48,9 +29,7 @@ namespace Calculator
 		static bool keepRunning = true;
 		static void Main(string[] args)
         {
-            Console.WriteLine("Kalkulacka\n");
-			Console.WriteLine("Pro seznam operaci napiste \"help\", pro vypis promennych napiste \"var\"\n");
-
+			ClearConsole("");
 			variables.Add("PI", Math.PI);
 
             String input = "";
@@ -59,8 +38,12 @@ namespace Calculator
 			{
 				do  //zadani vstupu dokud nebude spravny
 				{
+					Console.ForegroundColor = ConsoleColor.Cyan;
 					Console.WriteLine("Zadej priklad nebo nastav promennou");
+					Console.ResetColor();
+					Console.ForegroundColor = ConsoleColor.Yellow;
 					input = Console.ReadLine();
+					Console.ResetColor();
 					ClearConsole(input);
 
 					isValidInput = !TryParseInput(input) || !TryCalculate();
@@ -74,9 +57,12 @@ namespace Calculator
 		{
 			//vymaze konsoli
 			Console.Clear();
-			Console.WriteLine("Kalkulacka\n");
+			Console.ForegroundColor = ConsoleColor.Cyan;
+			Console.WriteLine("---------------------- Kalkulacka ----------------------\n"); 
 			Console.WriteLine("Pro seznam operaci napiste \"help\", pro vypis promennych napiste \"var\"\n");
-			Console.WriteLine(input);
+			Console.WriteLine("--------------------------------------------------------\n");
+			Console.ResetColor();
+			OutputMessage(input);
 		}
 		static bool TryParseInput(string input)
 		{
@@ -194,7 +180,11 @@ namespace Calculator
 						if (wasRelationLast)
 							isMinusNum = true;
 						else
+						{
 							Program.relations.Add(new Relation(Convert.ToString(c), priority));
+							wasRelationLast = true;
+						}
+
 						break;
 					case '('://priorita zavorek NUTNO na konci 
 						priority += 3;
@@ -203,7 +193,9 @@ namespace Calculator
 						priority -= 3;
 						if (priority < 0)
 						{
-							Console.WriteLine("> error: neuzavrene zavorky");
+							Console.ForegroundColor = ConsoleColor.Red;
+							ErrorMessage("> error: neuzavrene zavorky");
+							Console.ResetColor();
 							return false;
 						}
 						break;
@@ -235,10 +227,7 @@ namespace Calculator
 					default: // pokud je nalezena promenna, tak se nahradi za cislo
 						words.Add(word);
 						if (!Program.variables.ContainsKey(word))
-						{
-							Console.WriteLine("nova promenna: " + word);
 							newWordUsage = true;
-						}
 						else
 							Program.values.Add(Program.variables[word]);
 						break;
@@ -281,7 +270,7 @@ namespace Calculator
 				}
 				if (errorMessage)
 				{
-					Console.WriteLine("> error: nespravny vstup\n->napis \"help\" - pro vice informaci\n");
+					ErrorMessage("> error: nespravny vstup\n->napis \"help\" - pro vice informaci\n");
 				}
 				return true;
 			}
@@ -316,14 +305,14 @@ namespace Calculator
 					value = Program.values.First();
 				else
 				{
-					Console.WriteLine("> error: neni zadana hodnota");
+					ErrorMessage("> error: neni zadana hodnota");
 					output = true;
 					return true;
 				}
 
 				foreach (string word in Program.words)
 				{
-					Console.WriteLine($"> hodnota {word} nastavena na: {value}\n");
+					OutputMessage($"> hodnota {word} nastavena na: {value}\n");
 					Program.variables.Add(word, value);
 				}
 				Program.newWordUsage = false;
@@ -333,9 +322,9 @@ namespace Calculator
 			//pokud je vyuzita neznama promenna pripadne nespravny input
 			if (Program.newWordUsage)
 			{
-				Console.WriteLine("> error: neznama promenna - vyuziti neznamych znaku");
-				Console.WriteLine("> hodnoty do promennych se nastavuji:");
-				Console.WriteLine("> <nazev promenne> = <hodnota>\n");
+				ErrorMessage("> error: neznama promenna - vyuziti neznamych znaku");
+				ErrorMessage("> hodnoty do promennych se nastavuji:");
+				ErrorMessage("> <nazev promenne> = <hodnota>\n");
 				Program.newWordUsage = false;
 				output = true;
 				return true;
@@ -359,7 +348,7 @@ namespace Calculator
 					{
 						if (Program.values.Count < index+2)
 						{
-							Console.WriteLine("> error: nespravny vstup (moc argumentu na malo cisel)\n->napis \"help\" - pro vice informaci\n");
+							ErrorMessage("> error: nespravny vstup (moc argumentu na malo cisel)\n->napis \"help\" - pro vice informaci\n");
 							return true;
 						}
 						//pouzije okolni dve hodnoty pro vypocet a vysledek ulozi do prvni
@@ -374,40 +363,48 @@ namespace Calculator
 			}
 			if (Program.values.Count == 0)
 			{
-				Console.WriteLine("> error: nespravny vstup\n");
+				ErrorMessage("> error: nespravny vstup\n");
 				WriteHelp();
 				return true;
 			}
 
-			Console.WriteLine("= " + Program.values[0]);
+			OutputMessage("= " + Program.values[0]+"\n");
 			return false;
 		}
-
-		
-
+		static void ErrorMessage(string message)
+		{
+			Console.ForegroundColor = ConsoleColor.Red ;
+			Console.WriteLine(message);
+			Console.ResetColor();
+		}
+		static void OutputMessage(string message)
+		{
+			Console.ForegroundColor = ConsoleColor.Yellow;
+			Console.WriteLine(message);
+			Console.ResetColor();
+		}
 		static void WriteHelp()
 		{
-			Console.WriteLine("\n---------------- Help ----------------");
-			Console.WriteLine("Priklad zadejte bez =");
-			Console.WriteLine("Povolene operace: \n+, -, *, /, ^, sqrt(x), abs(x), log(baze,x), sin(x), cos(x), tan(x)");
-			Console.WriteLine("Goniometricke fce jsou v radianech");
-			Console.WriteLine("binary(x) - prevede x do dvojkove soustavy\nnumSystem(base,x) - prevede x do libovolne soustavy o zakladu base 1-9");
-			Console.WriteLine("Prevody systemu jsou fce a nepodporuji matematicke operace");
-			Console.WriteLine("Hodnoty do promennych se nastavuji:");
-			Console.WriteLine("<nazev promenne> = <hodnota>");
-			Console.WriteLine("Pro vypis promennych napiste \"var\"");
-			Console.WriteLine("--------------------------------------\n");
+			OutputMessage("\n---------------- Help ----------------");
+			OutputMessage("Priklad zadejte bez =");
+			OutputMessage("Povolene operace: \n+, -, *, /, ^, sqrt(x), abs(x), log(baze,x), sin(x), cos(x), tan(x)");
+			OutputMessage("Goniometricke fce jsou v radianech");
+			OutputMessage("binary(x) - prevede x do dvojkove soustavy\nnumSystem(base,x) - prevede x do libovolne soustavy o zakladu base 1-9");
+			OutputMessage("Prevody systemu jsou fce a nepodporuji matematicke operace");
+			OutputMessage("Hodnoty do promennych se nastavuji:");
+			OutputMessage("<nazev promenne> = <hodnota>");
+			OutputMessage("Pro vypis promennych napiste \"var\"");
+			OutputMessage("--------------------------------------\n");
 		}
 		static void WriteVariables()
 		{
-			Console.WriteLine("\n---------------- Promenne ----------------");
-			Console.WriteLine("Ulozene promenne: ");
+			OutputMessage("\n---------------- Promenne ----------------");
+			OutputMessage("Ulozene promenne: ");
 			foreach (var variable in Program.variables)
 			{
-				Console.WriteLine(variable.Key + ": " + variable.Value);
+				OutputMessage(variable.Key + ": " + variable.Value);
 			}
-			Console.WriteLine("\n");
-			Console.WriteLine("------------------------------------------\n");
+			OutputMessage("------------------------------------------\n");
 		}
 	}
 }
