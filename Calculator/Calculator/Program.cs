@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -69,7 +70,8 @@ namespace Calculator
 			string word = "";
 			string number = "";
 			bool wordChange = false;
-
+			bool isMinusNum = false;
+			bool wasRelationLast = true;
 
 			int priority = 0; // jedna se pouze o prioritu zavorek, priorita matematickych operaci resi trida relation
 
@@ -86,15 +88,22 @@ namespace Calculator
 				//nejdriv testujeme cisla, relace, promenne + sqrt keyword,  
 				c = input[i];
 				
-				if ((c >= 48 && c < 58) || c=='.')
+				if ((c >= 48 && c < 58) || c==',')
 				{//cislo
-					//Console.WriteLine($"number detect {word} {number} {c}"); debug
+					//pokud pred cislem byl minus, ktery neni operace
+					if(isMinusNum)
+					{
+						number += '-';
+						isMinusNum = false;
+					}
+					wasRelationLast = false;
 					number += c;
 					c = ' ';
 				}else if (number!= "")
 				{
 					Program.values.Add(Convert.ToDouble(number));
 					number = "";
+					isMinusNum = false;
 				}
 				
 					
@@ -102,19 +111,17 @@ namespace Calculator
 				switch (c)
 				{
 					case '+': //pro vsechny matematicke operace krome sqrt
-					case '-':
 					case '*':
 					case '/':
 					case '^':
 					case '=':
-						string type = "";
-						Program.relations.Add(new Relation(type += c, priority)); //nevim jak jednoduseji konvertovat char na string
+						Program.relations.Add(new Relation(Convert.ToString(c), priority)); 
+						wasRelationLast = true;
 						break;
-					case '('://ignorace zavorek
+					case '('://ignorace zavorek a minusu (musi byt na konci)
 					case ')':
-						break;
-					case ' ': //ignoruj mezery a carky 
-					case ',':
+					case '-':
+					case ' ': //ignoruj mezery 
 						break;
 					default: //postupne sklada slovo ve string word
 						word += c;
@@ -126,12 +133,20 @@ namespace Calculator
 					switch (word)
 					{
 						case "sqrt":
+						case "sin":
+						case "cos":
+						case "tan":
+						case "abs":
+						case "binary":
 							Program.relations.Add(new Relation(word, priority));
 							Program.values.Add(0);
 							break;
-						case "abs":
+						case "log":
+						case "numSystem":
 							Program.relations.Add(new Relation(word, priority));
-							Program.values.Add(0);
+							break;
+						case "help":
+							WriteHelp();
 							break;
 						default: // pokud je nalezena promenna, tak se nahradi za cislo
 							words.Add(word);
@@ -141,13 +156,28 @@ namespace Calculator
 								newWordUsage = true;
 							}
 							else
-								Program.values.Add(Program.variables[word]);
+							{
+								if(isMinusNum)
+									Program.values.Add(-Program.variables[word]);
+								else
+									Program.values.Add(Program.variables[word]);
+								wasRelationLast = false;
+								isMinusNum = false;
+							}
+
 							break;
 					}
 					word = "";
 				}
 				switch (c)
 				{
+					case '-':
+						//pokud je minus pred cislem, tak je cislo a ne operace
+						if (wasRelationLast)
+							isMinusNum = true;
+						else
+							Program.relations.Add(new Relation(Convert.ToString(c), priority));
+						break;
 					case '('://priorita zavorek NUTNO na konci 
 						priority += 3;
 						break;
@@ -166,19 +196,18 @@ namespace Calculator
 			//pokud skoncil input, ale je to konec slova nebo cisla
 			if (number != "")
 			{
-				Program.values.Add(Convert.ToDouble(number));
+				Double value = 0;
+				if (!Double.TryParse(number, out value))
+					Double.Parse(number, System.Globalization.NumberStyles.AllowDecimalPoint);
+
+				Program.values.Add(value);
 			}
 			if (word != "")
 			{
 				switch (word)
 				{
-					case "sqrt":
-						Program.relations.Add(new Relation(word, priority));
-						Program.values.Add(0);
-						break;
-					case "abs":
-						Program.relations.Add(new Relation(word, priority));
-						Program.values.Add(0);
+					case "help":
+						WriteHelp();
 						break;
 					default: // pokud je nalezena promenna, tak se nahradi za cislo
 						words.Add(word);
@@ -198,6 +227,8 @@ namespace Calculator
         }
 		static bool TryCalculate()
 		{
+			{ 
+			/* developer print
 			foreach (string word in Program.words)
 			{
 				Console.WriteLine($"word: {word}");
@@ -209,6 +240,8 @@ namespace Calculator
 			foreach (Relation relation in Program.relations)
 			{
 				Console.WriteLine($"Relation: {relation.Type}, prio: {relation.Priority}");
+			}
+			*/
 			}
 			//vrati true - neslo zpracovat 
 			//false - vporadku
@@ -248,6 +281,7 @@ namespace Calculator
 				Console.WriteLine("error: neznama promenna - vyuziti neznamych znaku");
 				Console.WriteLine("hodnoty do promennych se nastavuji:");
 				Console.WriteLine("<nazev promenne> = <hodnota>");
+				Program.newWordUsage = false;
 				return true;
 			}
 
@@ -262,18 +296,11 @@ namespace Calculator
 				for (int index = 0; index < Program.relations.Count; index++)
 				{
 					if (Program.relations[index].Priority == i)
-					{
-						//if (Program.relations[index].ArgumentsNumber == 2)
-						{
-							//pouzije okolni dve hodnoty pro vypocet a vysledek ulozi do prvni
-							//druhou hodnotu pak vymaze
-							Program.values[index] = Program.relations[index].Calculate(Program.values[index], Program.values[index + 1]);
-							Program.values.RemoveAt(index + 1);
-
-						}
-						//else
-							//pokud vypocet potrebuje jen jednu hodnotu tak nic nemaze a uklada do nasledujici hodnoty
-							//Program.values[index + 1] = Program.relations[index].Calculate(Program.values[index + 1], 0);
+					{			
+						//pouzije okolni dve hodnoty pro vypocet a vysledek ulozi do prvni
+						//druhou hodnotu pak vymaze
+						Program.values[index] = Program.relations[index].Calculate(Program.values[index], Program.values[index + 1]);
+						Program.values.RemoveAt(index + 1);	
 						//nakonec vymaze prvek z listu relaci
 						Program.relations.RemoveAt(index);
 						index--;
@@ -282,6 +309,17 @@ namespace Calculator
 			}
 			Console.WriteLine("= " + Program.values[0]);
 			return false;
+		}
+
+		static void WriteHelp()
+		{
+			Console.WriteLine("Priklad zadejte bez =");
+			Console.WriteLine("Povolene operace: \n+, -, *, /, ^, sqrt(x), abs(x), log(baze,x), sin(x), cos(x), tan(x)");
+			Console.WriteLine("Goniometricke fce jsou v radianech");
+			Console.WriteLine("binary(x) - prevede x do dvojkove soustavy\nnumSystem(base,x) - prevede x do libovolne soustavy");
+			Console.WriteLine("prevody systemu jsou fce a nepodporuji matematicke operace");
+			Console.WriteLine("Hodnoty do promennych se nastavuji:");
+			Console.WriteLine("<nazev promenne> = <hodnota>");
 		}
 	}
 }

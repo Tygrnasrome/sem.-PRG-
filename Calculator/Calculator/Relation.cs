@@ -10,8 +10,6 @@ namespace Calculator
 	{	
 		public string Type { get; set; }
 		public int Priority { get; set; }
-
-		public int ArgumentsNumber { get; set; }
 		public Relation(string type, int priority)
 		{
 			Type = type;
@@ -21,19 +19,19 @@ namespace Calculator
 			{
 				case "/":
 				case "*":
-				case "^":
 					Priority++;
 					break;
+				case "sin":
+				case "cos":
+				case "tan":
+				case "log":
+				case "^":
 				case "sqrt":
 				case "abs":
+				case "binary":
 					Priority+= 2;
 					break;
 			}
-			if(Type == "sqrt")
-			{
-				ArgumentsNumber = 1;
-			}else
-				ArgumentsNumber = 2;
 		}
 		public double Calculate(double a,  double b)
 		{
@@ -53,9 +51,38 @@ namespace Calculator
 					return Math.Sqrt(b);
 				case "abs":
 					return Math.Abs(b);
+				case "log":
+					return Math.Log(b,a);
+				case "sin":
+					return Math.Sin(b);
+				case "cos":
+					return Math.Cos(b);
+				case "tan":
+					return Math.Tan(b);
+				case "binary":
+					return Convert.ToDouble(NumSystemConvertFromDecimal(2, Convert.ToInt32(b)));
+				case "numSystem":
+					return Convert.ToDouble(NumSystemConvertFromDecimal(Convert.ToInt32(a), Convert.ToInt32(b)));
+				
 				default:
 					throw new NotImplementedException();
 			}
+
+		}
+		static string NumSystemConvertFromDecimal(int numSystem, int decimalNumber)
+		{
+			//nefunguje na desetinna cisla
+			// from stack overflow https://stackoverflow.com/questions/2954962/convert-integer-to-binary-in-c-sharp
+			
+			int remainder;
+			string result = string.Empty;
+			while (decimalNumber > 0)
+			{
+				remainder = decimalNumber % numSystem;
+				decimalNumber /= numSystem;
+				result = remainder.ToString() + result;
+			}
+			return result;
 		}
 	}
 }
