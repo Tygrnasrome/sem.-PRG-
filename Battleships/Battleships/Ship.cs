@@ -103,6 +103,16 @@ namespace Battleships
 					isShip = true;
 			return isShip;
 		}
-	}
+		public bool IsDestroyed(char[,] Battlefield)
+		{
+			for (int i = 0;i < ShipFields.GetLength(0); i++)
+			{
+				if (Battlefield[ShipFields[i,0], ShipFields[i, 1]] == 's')
+					return false;
+			}
+			return true;
+		}
+
+    }
 
 }

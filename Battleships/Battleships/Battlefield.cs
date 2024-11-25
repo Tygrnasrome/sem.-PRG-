@@ -69,7 +69,21 @@ namespace Battleships
             Console.Write("└");
             for (int i = 0; i < Size * 2; i++)
                 Console.Write("─");
-            Console.Write("┘");
+            Console.Write("┘\n");
+            Console.SetCursorPosition(Location[0], Location[1] + Size + 2);
+            Console.Write("  ");
+            foreach (Ship ship in Ships)
+			{
+				if (ship.Placed && !ship.IsDestroyed(Field))
+				{
+					Console.ForegroundColor = ConsoleColor.White;
+				} else
+                    Console.ForegroundColor = ConsoleColor.DarkGray;
+
+				for (int i = 0; i < ship.Size; i++)
+					Console.Write("#");
+                Console.Write(" ");
+            }
             Console.WriteLine();
         }
         public void DrawField(int[] location, bool is_tmp, bool revealed)
