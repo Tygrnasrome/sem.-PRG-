@@ -63,7 +63,6 @@ namespace Battleships
                 {
                     DrawField([x, y], SelectedShip.IsShipField([x, y]) && selecting, revealed);
                 }
-                //Console.Write("|\n");
                 Console.Write("|\n");
             }
             Console.SetCursorPosition(Location[0], Location[1] + Size+1);

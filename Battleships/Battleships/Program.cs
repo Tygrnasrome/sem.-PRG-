@@ -14,8 +14,9 @@ namespace Battleships
 		static int AIDifficulty = 0;
         static void Main(string[] args)
         {
-			while(true)
-            {
+			Console.CursorVisible = false;
+			while (true)
+			{
 				Init();
 				// placing ships
 				AIBf.PlaceAllShips();
@@ -26,17 +27,19 @@ namespace Battleships
 					PlaceRender();
 					PlayerInput();
 				}
-				Console.SetCursorPosition(0, 0); 
-				PlaceRender();
-				Console.SetCursorPosition(0, 0); 
+				Console.Clear();
+                PlayerBf.DrawBattlefield("Hrac", false);
+                AIBf.DrawBattlefield("AI opponent", false, true);
+                Console.SetCursorPosition(0, 0);
 
 				while (AIDifficulty == 0)
 				{
 					Console.WriteLine("Battleships\n");
 					Console.WriteLine("Zadej obtiznost AI protivnika (1-2)");
 					Console.WriteLine("1 - very easy");
-					Console.WriteLine("2 - normal\n");
-					switch (Console.ReadKey(intercept: true).Key)
+					Console.WriteLine("2 - normal");
+
+                    switch (Console.ReadKey(intercept: true).Key)
 					{
 						case ConsoleKey.D1:
 							AIDifficulty = 1;
@@ -45,27 +48,54 @@ namespace Battleships
 							AIDifficulty = 2;
 							break;
 						default:
+							Console.ForegroundColor = ConsoleColor.Red;
 							Console.WriteLine("Nespravny vstup");
+							Console.ResetColor();
 							break;
 					}
-					Console.SetCursorPosition(0, 0); 
+					Console.SetCursorPosition(0, 0);
 				}
 				Console.Clear();
 
 				// game loop
 				while (!PlayerBf.AllShipsDestroyed() && !AIBf.AllShipsDestroyed())
 				{
-					Console.SetCursorPosition(0, 0); 
+					Console.SetCursorPosition(0, 0);
 					GameRender();
 					PlayerGameInput();
-
 				}
+				if (AIBf.AllShipsDestroyed())
+				{
+					// ChatGPT generated
+                    Console.WriteLine("W       W  III  N   N");
+                    Console.WriteLine("W       W   I   NN  N");
+                    Console.WriteLine("W   W   W   I   N N N");
+                    Console.WriteLine(" W W W W    I   N  NN");
+                    Console.WriteLine("  W   W    III  N   N");
+                }else
+				{
+                    // ChatGPT generated
+                    Console.WriteLine("DDDD   EEEEE  FFFFF  EEEEE  AAAAA  TTTTT");
+                    Console.WriteLine("D   D  E      F      E      A   A    T  ");
+                    Console.WriteLine("D   D  EEEE   FFF    EEEE   AAAAA    T  ");
+                    Console.WriteLine("D   D  E      F      E      A   A    T  ");
+                    Console.WriteLine("DDDD   EEEEE  F      EEEEE  A   A    T  ");
+                }
+				Console.ReadKey(intercept: true);
 			}
         }
         static void Init()
         {
             Console.OutputEncoding = System.Text.Encoding.UTF8;
             PlayerBf.Active = true;
+
+            PlayerBf = new Battlefield(12, [0, 8]);
+            AIBf = new Battlefield(12, [30, 8]);
+
+            SelectedTile = [0, 0];
+            Valid_placement = true;
+            AIDifficulty = 0;
+			Console.Clear();
         }
         static void PlaceRender()
         {
@@ -84,7 +114,7 @@ namespace Battleships
 			Console.WriteLine("Pomoci sipek, WSAD, enter namirte a strelte");
 			PlayerBf.Location = playerBfLoc;
 			PlayerBf.DrawBattlefield("Hrac", false);
-			AIBf.DrawBattlefield("AI opponent", false, false);
+			AIBf.DrawBattlefield("AI opponent", false, true);
 			AIBf.DrawSelectedField(SelectedTile);
 
 			PlayerBf.Location = [60, 8];
