@@ -6,12 +6,15 @@ namespace Battleships
 {
     internal class Program
     {
-        static Battlefield PlayerBf = new Battlefield(12, [0,8]);
-        static Battlefield AIBf = new Battlefield(12, [30, 8]);
+		static int BattlefieldSize = 12;
+        static Battlefield PlayerBf = new Battlefield(BattlefieldSize, [0,12]);
+        static Battlefield AIBf = new Battlefield(BattlefieldSize, [30, 12]);
+
+		static AI Svatka = new AI(BattlefieldSize);
 
         static int[] SelectedTile = {0, 0};
         static bool Valid_placement = true;
-		static int AIDifficulty = 0;
+        static int[] playerBfLoc = PlayerBf.Location;
         static void Main(string[] args)
         {
 			Console.CursorVisible = false;
@@ -29,12 +32,11 @@ namespace Battleships
 				}
 				Console.Clear();
                 PlayerBf.DrawBattlefield("Hrac", false);
-                AIBf.DrawBattlefield("AI opponent", false, true);
                 Console.SetCursorPosition(0, 0);
 
-				while (AIDifficulty == 0)
+				while (Svatka.Difficulty == 0)
 				{
-					Console.WriteLine("Battleships\n");
+					WriteBattleships();
 					Console.WriteLine("Zadej obtiznost AI protivnika (1-2)");
 					Console.WriteLine("1 - very easy");
 					Console.WriteLine("2 - normal");
@@ -42,10 +44,10 @@ namespace Battleships
                     switch (Console.ReadKey(intercept: true).Key)
 					{
 						case ConsoleKey.D1:
-							AIDifficulty = 1;
+							Svatka.Difficulty = 1;
 							break;
 						case ConsoleKey.D2:
-							AIDifficulty = 2;
+							Svatka.Difficulty = 2;
 							break;
 						default:
 							Console.ForegroundColor = ConsoleColor.Red;
@@ -64,60 +66,79 @@ namespace Battleships
 					GameRender();
 					PlayerGameInput();
 				}
-				if (AIBf.AllShipsDestroyed())
-				{
-					// ChatGPT generated
-                    Console.WriteLine("W       W  III  N   N");
-                    Console.WriteLine("W       W   I   NN  N");
-                    Console.WriteLine("W   W   W   I   N N N");
-                    Console.WriteLine(" W W W W    I   N  NN");
-                    Console.WriteLine("  W   W    III  N   N");
-                }else
+                Console.SetCursorPosition(0, 0);
+                GameRender();
+                if (AIBf.AllShipsDestroyed())
 				{
                     // ChatGPT generated
-                    Console.WriteLine("DDDD   EEEEE  FFFFF  EEEEE  AAAAA  TTTTT");
-                    Console.WriteLine("D   D  E      F      E      A   A    T  ");
-                    Console.WriteLine("D   D  EEEE   FFF    EEEE   AAAAA    T  ");
-                    Console.WriteLine("D   D  E      F      E      A   A    T  ");
-                    Console.WriteLine("DDDD   EEEEE  F      EEEEE  A   A    T  ");
+                    Console.ForegroundColor = ConsoleColor.Green;
+                    Console.WriteLine("░       ░  ░░░  ░   ░");
+                    Console.WriteLine("░       ░   ░   ░░  ░");
+                    Console.WriteLine("░   ░   ░   ░   ░ ░ ░");
+                    Console.WriteLine(" ░ ░ ░ ░    ░   ░  ░░");
+                    Console.WriteLine("  ░   ░    ░░░  ░   ░");
+                    Console.ResetColor();
                 }
+                else
+				{
+                    // ChatGPT generated
+					Console.ForegroundColor= ConsoleColor.Red;
+                    Console.WriteLine("░░░░   ░░░░░  ░░░░░  ░░░░░  ░░░░░  ░░░░░");
+                    Console.WriteLine("░   ░  ░      ░      ░      ░   ░    ░  ");
+                    Console.WriteLine("░   ░  ░░░░   ░░░░   ░░░░   ░░░░░    ░  ");
+                    Console.WriteLine("░   ░  ░      ░      ░      ░   ░    ░  ");
+                    Console.WriteLine("░░░░   ░░░░░  ░      ░░░░░  ░   ░    ░  ");
+					Console.ResetColor();
+                }
+				Console.WriteLine("Pro pokracovani stisknete libovolne tlacitko");
 				Console.ReadKey(intercept: true);
 			}
+        }
+		static void WriteBattleships()
+		{
+            // ChatGTP generated
+            Console.ForegroundColor = ConsoleColor.DarkCyan;
+            Console.WriteLine("░░░░░   ░░░░░  ░░░░░  ░░░░░  ░      ░░░░░   ░░░░   ░   ░  ░░░   ░░░░    ░░░░  ");
+            Console.WriteLine("░   ░   ░   ░    ░      ░    ░      ░      ░       ░   ░   ░    ░   ░  ░      ");
+            Console.WriteLine("░░░░░   ░░░░░    ░      ░    ░      ░░░░    ░░░░   ░░░░░   ░    ░░░░    ░░░░  ");
+            Console.WriteLine("░   ░   ░   ░    ░      ░    ░      ░           ░  ░   ░   ░    ░           ░ ");
+            Console.WriteLine("░░░░░   ░   ░    ░      ░    ░░░░░  ░░░░░   ░░░░   ░   ░  ░░░   ░       ░░░░  \n");
+            Console.ResetColor();
         }
         static void Init()
         {
             Console.OutputEncoding = System.Text.Encoding.UTF8;
             PlayerBf.Active = true;
 
-            PlayerBf = new Battlefield(12, [0, 8]);
-            AIBf = new Battlefield(12, [30, 8]);
+            PlayerBf = new Battlefield(12, [0, 12]);
+            AIBf = new Battlefield(12, [30, 12]);
 
             SelectedTile = [0, 0];
             Valid_placement = true;
-            AIDifficulty = 0;
-			Console.Clear();
+            Svatka = new AI(BattlefieldSize);
+            Console.Clear();
         }
         static void PlaceRender()
         {
-            Console.WriteLine("Battleships\n");
-			Console.WriteLine("Pomoci sipek, WSAD, enter zvolte rozmisteni lodi");
-			Console.WriteLine("Muzete pouzit autofill klavesou Tab");
-
+            WriteBattleships();
+            Console.WriteLine("Pomoci sipek/WSAD, enter zvolte rozmisteni lodi");
+			Console.WriteLine("Muzete pouzit autofill klavesou Tab\n");
+			Console.WriteLine("Lode se nesmi navzajem prekryvat ani dotykat stranama");
+            
             PlayerBf.DrawBattlefield("Hrac");
-            AIBf.DrawBattlefield("AI opponent", false, true);
         }
-		static int[] playerBfLoc = PlayerBf.Location;
+		
 		static void GameRender()
 		{
-			Console.WriteLine("Battleships\n");
+            WriteBattleships();
 
-			Console.WriteLine("Pomoci sipek, WSAD, enter namirte a strelte");
+            Console.WriteLine("Pomoci sipek, WSAD, enter namirte a strelte");
 			PlayerBf.Location = playerBfLoc;
 			PlayerBf.DrawBattlefield("Hrac", false);
-			AIBf.DrawBattlefield("AI opponent", false, true);
+			AIBf.DrawBattlefield("AI opponent", false, false);
 			AIBf.DrawSelectedField(SelectedTile);
 
-			PlayerBf.Location = [60, 8];
+			PlayerBf.Location = [60, 12];
 			PlayerBf.DrawBattlefield("Pohled AI", false, false);
 		}
         
@@ -128,23 +149,15 @@ namespace Battleships
             switch (Console.ReadKey(intercept: true).Key)
             {
                 case ConsoleKey.UpArrow:
-					if (SelectedTile[1] != 0)
-						SelectedTile[1] -= 1;
                     PlayerBf.SelectedShip.MoveUp();
                     break;
                 case ConsoleKey.DownArrow:
-					if (SelectedTile[1] != PlayerBf.Size-1)
-					SelectedTile[1] += 1;
                     PlayerBf.SelectedShip.MoveDown(PlayerBf.Size);
                     break;
                 case ConsoleKey.LeftArrow:
-					if (SelectedTile[0] != 0)
-						SelectedTile[0] -= 1;
 					PlayerBf.SelectedShip.MoveLeft();
                     break;
                 case ConsoleKey.RightArrow:
-					if (SelectedTile[0] != PlayerBf.Size - 1)
-						SelectedTile[0] += 1;
                     PlayerBf.SelectedShip.MoveRight(PlayerBf.Size);
                     break;
                 case ConsoleKey.Enter:
@@ -192,27 +205,10 @@ namespace Battleships
 
 			}
 		}
-		static Random rand = new Random();
+
 		static void AIGameInput()
 		{
-			int x, y;
-			if (AIDifficulty == 1)
-			{
-				x = rand.Next(PlayerBf.Size);
-				y = rand.Next(PlayerBf.Size);
-				while (PlayerBf.RevealedFields[x, y])
-				{
-					x = rand.Next(PlayerBf.Size);
-					y = rand.Next(PlayerBf.Size);
-				}
-
-				PlayerBf.DestroyField([x, y]);
-			}
-			if (AIDifficulty == 2)
-			{
-				// TODO
-			}
-
+			Svatka.Shoot(ref PlayerBf);
 		}
 	}
 }

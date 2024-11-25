@@ -41,7 +41,6 @@ namespace Battleships
 						ShipFields[i, 1] = Location[1] + i;
 						break;
 				}
-
 			}
 		}
 		public void Rotate(int battlefieldSize)
