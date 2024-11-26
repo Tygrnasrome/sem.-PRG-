@@ -18,19 +18,19 @@ namespace Battleships
 			Uses = useCount;
 			Fields = new List<int[]>();
 			Offset = new int[2, 4];
-			SetOffset([1, 1, 1, 1]);
+			SetOffset([4, 0, 0, 0]);
 			Location = new[] { 2, 2 };
 			Rotation = 0;
 		}
 		public override void UpdateFields()
 		{
 			Fields.Clear();
-			for (int y = 0; y < 3; y++)
+			for (int i = 0; i < 5; i++)
 			{
-				for (int x = 0; x < 3; x++)
-				{
-					Fields.Add([Location[0] - 1 + x, Location[1] - 1 + y]);
-				}
+				if(Rotation%2 ==  0)
+					Fields.Add([Location[0] + i, Location[1]]);
+				else
+					Fields.Add([Location[0], Location[1] + i]);
 			}
 		}
 

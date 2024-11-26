@@ -192,6 +192,12 @@ namespace Battleships
 		{
 			switch (Console.ReadKey(intercept: true).Key)
 			{
+				case ConsoleKey.W:
+				case ConsoleKey.S:
+				case ConsoleKey.A:
+				case ConsoleKey.D:
+					Human.SelectedWeapon.Rotate();
+					break;
 				case ConsoleKey.UpArrow:
 					if (SelectedTile[1] != 0)
 						SelectedTile[1] -= 1;
