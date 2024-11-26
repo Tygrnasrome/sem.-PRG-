@@ -13,9 +13,13 @@ namespace Battleships
 		public override int[] Location { get; set; }
 		public override int Uses { get; set; }
 		public override List<int[]> Fields { get; set; }
-		public Bombardment(int useCount)
+        public override bool Destructive { get; set; }
+        public override string Name { get; set; }
+        public Bombardment(int useCount)
 		{
-			Uses = useCount;
+			Name = "Plosna bombardace (1x5)";
+            Destructive = true;
+            Uses = useCount;
 			Fields = new List<int[]>();
 			Offset = new int[2, 4];
 			SetOffset([4, 0, 0, 0]);

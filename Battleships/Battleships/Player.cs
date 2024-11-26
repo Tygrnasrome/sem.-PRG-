@@ -20,10 +20,16 @@ namespace Battleships
 		{
 			if (SelectedWeapon.Uses ==0)
 				return false;
-			foreach (int[] field in SelectedWeapon.Fields)
-			{
-				battlefield.DestroyField(field);
-			}
+			if (!SelectedWeapon.Destructive)
+				foreach (int[] field in SelectedWeapon.Fields)
+				{
+					battlefield.RevealedFields[field[0], field[1]] = true;
+				}
+			else
+				foreach (int[] field in SelectedWeapon.Fields)
+				{
+					battlefield.DestroyField(field);
+				}
 			SelectedWeapon.Uses--;
 			if (SelectedWeapon.Uses == 0)
 				ChangeWeapon(0);

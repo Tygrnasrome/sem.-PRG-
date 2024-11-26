@@ -37,7 +37,7 @@ namespace Battleships
 					PlayerInput();
 				}
 				Console.Clear();
-                PlayerBf.DrawBattlefield("Hrac", Human.SelectedWeapon.Uses,false);
+                PlayerBf.DrawBattlefield("Hrac",false);
                 Console.SetCursorPosition(0, 0);
 
 				while (Svatka.Difficulty == 0)
@@ -46,6 +46,7 @@ namespace Battleships
 					Console.WriteLine("Zadej obtiznost AI protivnika (1-2)");
 					Console.WriteLine("1 - very easy");
 					Console.WriteLine("2 - normal");
+                    Console.WriteLine("3 - hard");
 
                     switch (Console.ReadKey(intercept: true).Key)
 					{
@@ -55,7 +56,10 @@ namespace Battleships
 						case ConsoleKey.D2:
 							Svatka.Difficulty = 2;
 							break;
-						default:
+                        case ConsoleKey.D3:
+                            Svatka.Difficulty = 3;
+                            break;
+                        default:
 							Console.ForegroundColor = ConsoleColor.Red;
 							Console.WriteLine("Nespravny vstup");
 							Console.ResetColor();
@@ -78,22 +82,22 @@ namespace Battleships
 				{
                     // ChatGPT generated
                     Console.ForegroundColor = ConsoleColor.Green;
-                    Console.WriteLine("░       ░  ░░░  ░   ░");
+                    Console.WriteLine("\n\n\n░       ░  ░░░  ░   ░");
                     Console.WriteLine("░       ░   ░   ░░  ░");
                     Console.WriteLine("░   ░   ░   ░   ░ ░ ░");
                     Console.WriteLine(" ░ ░ ░ ░    ░   ░  ░░");
-                    Console.WriteLine("  ░   ░    ░░░  ░   ░");
+                    Console.WriteLine("  ░   ░    ░░░  ░   ░\n");
                     Console.ResetColor();
                 }
                 else
 				{
                     // ChatGPT generated
 					Console.ForegroundColor= ConsoleColor.Red;
-                    Console.WriteLine("░░░░   ░░░░░  ░░░░░  ░░░░░  ░░░░░  ░░░░░");
+                    Console.WriteLine("\n\n\n░░░░   ░░░░░  ░░░░░  ░░░░░  ░░░░░  ░░░░░");
                     Console.WriteLine("░   ░  ░      ░      ░      ░   ░    ░  ");
                     Console.WriteLine("░   ░  ░░░░   ░░░░   ░░░░   ░░░░░    ░  ");
                     Console.WriteLine("░   ░  ░      ░      ░      ░   ░    ░  ");
-                    Console.WriteLine("░░░░   ░░░░░  ░      ░░░░░  ░   ░    ░  ");
+                    Console.WriteLine("░░░░   ░░░░░  ░      ░░░░░  ░   ░    ░  \n");
 					Console.ResetColor();
                 }
 				Console.WriteLine("Pro pokracovani stisknete libovolne tlacitko");
@@ -121,11 +125,13 @@ namespace Battleships
 			playerBfLoc = PlayerBf.Location;
 			PlayerBf.Active = true;
 			AIBf = new Battlefield(12, [30, 12]);
-			Weapons = new List<Weapon>() { new Cannon(), new Sonar(SonarUses), new Bombardment(BombardmentUses) };
+			
 
 			SelectedTile = [0, 0];
             Valid_placement = true;
+            Weapons = new List<Weapon>() { new Cannon(), new Bomb(SonarUses), new Bombardment(BombardmentUses), new Sonar(SonarUses) };
             Svatka = new AI(BattlefieldSize, Weapons);
+			Weapons = new List<Weapon>() { new Cannon(), new Bomb(SonarUses), new Bombardment(BombardmentUses), new Sonar(SonarUses)};
 			Human = new Player(Weapons);
 			Console.Clear();
         }
@@ -136,20 +142,27 @@ namespace Battleships
 			Console.WriteLine("Muzete pouzit autofill klavesou Tab\n");
 			Console.WriteLine("Lode se nesmi navzajem prekryvat ani dotykat stranama");
             
-            PlayerBf.DrawBattlefield("Hrac", Human.SelectedWeapon.Uses);
+            PlayerBf.DrawBattlefield("Hrac");
         }
 		static void GameRender()
 		{
             WriteBattleships();
 
-            Console.WriteLine("Pomoci sipek, WSAD, enter namirte a strelte");
-			PlayerBf.Location = playerBfLoc;
-			PlayerBf.DrawBattlefield("Hrac", Human.SelectedWeapon.Uses, false);
-			AIBf.DrawBattlefield("AI opponent", -1, false, false);
+            Console.WriteLine("Pomoci sipek, WSAD, enter namirte");
+			Console.WriteLine("Pomoci klaves cisel vyberte zbran, Enter pro vystrel");
+			for (int i = 0; i < Human.Weapons.Count; i++)
+			{
+				DrawAmmo(Human.Weapons[i], i+1);
+			}
+
+            PlayerBf.Location = playerBfLoc;
+			PlayerBf.DrawBattlefield("Hrac", false);
+			AIBf.DrawBattlefield("AI opponent", false, false);
 			Human.SelectedWeapon.DrawWeapon(AIBf.Location);
 
 			PlayerBf.Location = [60, 12];
-			PlayerBf.DrawBattlefield("Pohled AI", Human.SelectedWeapon.Uses, false, false);
+			PlayerBf.DrawBattlefield("Pohled AI", false, false);
+
 		}
         
         static void PlayerInput()
@@ -196,7 +209,7 @@ namespace Battleships
 				case ConsoleKey.S:
 				case ConsoleKey.A:
 				case ConsoleKey.D:
-					Human.SelectedWeapon.Rotate();
+					Human.SelectedWeapon.Rotate(PlayerBf.Size, PlayerBf.Size);
 					break;
 				case ConsoleKey.UpArrow:
 					if (SelectedTile[1] != 0)
@@ -231,12 +244,30 @@ namespace Battleships
 				case ConsoleKey.D3:
 					Human.ChangeWeapon(2);
 					break;
-			}
+                case ConsoleKey.D4:
+                    Human.ChangeWeapon(3);
+                    break;
+            }
 		}
 
 		static void AIGameInput()
 		{
 			Svatka.Shoot(ref PlayerBf);
 		}
-	}
+		static void DrawAmmo(Weapon weapon, int num)
+		{
+            if (weapon.Uses != 0)
+                Console.ForegroundColor = ConsoleColor.White;
+            else
+                Console.ForegroundColor = ConsoleColor.DarkGray;
+			Console.Write(num.ToString()+ " - ");
+			Console.Write(weapon.Name+": ");
+            if (weapon.Uses < 0)
+                Console.Write("∞");
+            else
+                Console.Write(weapon.Uses.ToString());
+			Console.WriteLine();
+
+        }
+    }
 }

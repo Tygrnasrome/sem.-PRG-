@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace Battleships
 {
@@ -14,8 +15,12 @@ namespace Battleships
 		public abstract int[] Location { get; set; }
 		public abstract int Uses { get; set; }
 		public abstract List<int[]> Fields { get; set; }
-		protected Weapon()
+        public abstract bool Destructive { get; set; }
+        public abstract string Name { get; set; }
+        protected Weapon()
 		{
+            Name = "general";
+            Destructive = true;
 			Fields = new List<int[]>();
 			Offset = new int[2, 4];
 			Location = new[] { 2, 2 };
@@ -23,12 +28,12 @@ namespace Battleships
 		}
 		public virtual void SetOffset(int[] offset)
 		{
-			int[] tmpOffset = new int[] {offset[0], offset[1], offset[2], offset[3], offset[0]};
+			int[] tmpOffset = new int[] {offset[0], offset[1], offset[2], offset[3]};
 			for (int i = 0; i < 2; i++)
 			{
 				for (int rotation = 0; rotation < 4; rotation++)
 				{
-					Offset[i, rotation] = tmpOffset[rotation+i];
+					Offset[i, rotation] = tmpOffset[(rotation-i+40)%4];
 				}
 			}
 		}
@@ -66,9 +71,14 @@ namespace Battleships
                 UpdateFields();
             }
         }
-        public virtual void Rotate()
+        public virtual void Rotate(int battlefieldHeight, int battlefieldWidth)
         {
+			if(Rotation%2 == 0 && Location[1] > battlefieldHeight - Offset[0,0]-1)
+				Location[1] = battlefieldHeight - Offset[0, 0] - 1;
+            if (Rotation % 2 == 1 && Location[0] > battlefieldHeight - Offset[1, 1]-1)
+                Location[0] = battlefieldHeight - Offset[0, 0] - 1;
             Rotation++;
+			UpdateFields();
         }
 		public virtual void DrawWeapon(int[] location)
 		{

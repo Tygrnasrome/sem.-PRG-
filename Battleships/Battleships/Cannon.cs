@@ -13,10 +13,13 @@ namespace Battleships
 		public override int[] Location { get; set; }
 		public override int Uses { get; set; }
 		public override List<int[]> Fields { get; set; }
-
-		public Cannon()
+        public override bool Destructive { get; set; }
+        public override string Name { get; set; }
+        public Cannon()
 		{
-			Uses = -1;
+			Name = "Delo (1x1)";
+            Destructive = true;
+            Uses = -1;
 			Fields = new List<int[]>();
 			Offset = new int[2, 4];
 			SetOffset([0, 0, 0, 0]);

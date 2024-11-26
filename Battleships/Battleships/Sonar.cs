@@ -13,9 +13,13 @@ namespace Battleships
 		public override int[] Location { get; set; }
 		public override int Uses { get; set; }
 		public override List<int[]> Fields { get; set; }
-		public Sonar(int useCount) 
+		public override bool Destructive {  get; set; }
+        public override string Name { get; set; }
+        public Sonar(int useCount) 
 		{
-			Uses = useCount;
+			Name = "Sonar (3x3)";
+            Destructive = false;
+            Uses = useCount;
 			Fields = new List<int[]>();
 			Offset = new int[2, 4];
 			SetOffset([1, 1, 1, 1]);
@@ -31,14 +35,6 @@ namespace Battleships
 				{
 					Fields.Add([Location[0] - 1 + x, Location[1] - 1 + y]);
 				}
-			}
-		}
-	
-		public void Shoot(ref Battlefield battlefield)
-		{
-			foreach (int[] field in Fields)
-			{
-				battlefield.DestroyField(field);
 			}
 		}
 	}
