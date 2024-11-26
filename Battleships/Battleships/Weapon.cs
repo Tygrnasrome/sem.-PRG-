@@ -7,59 +7,80 @@ using System.Threading.Tasks;
 
 namespace Battleships
 {
-    internal class Weapon
-    {
-        public int Width { get; set; }
-        public int Height { get; set; }
-        public int Rotation { get; set; }
-        public int[] Location { get; set; }
-        public Weapon(int[] location, int w, int h) 
+	public abstract class Weapon
+	{
+		public abstract int[,] Offset { get; set; }
+		public abstract int Rotation { get; set; }
+		public abstract int[] Location { get; set; }
+		public abstract int Uses { get; set; }
+		public abstract List<int[]> Fields { get; set; }
+		protected Weapon()
+		{
+			Fields = new List<int[]>();
+			Offset = new int[2, 4];
+			Location = new[] { 2, 2 };
+			Rotation = 0;
+		}
+		public virtual void SetOffset(int[] offset)
+		{
+			int[] tmpOffset = new int[] {offset[0], offset[1], offset[2], offset[3], offset[0]};
+			for (int i = 0; i < 2; i++)
+			{
+				for (int rotation = 0; rotation < 4; rotation++)
+				{
+					Offset[i, rotation] = tmpOffset[rotation+i];
+				}
+			}
+		}
+
+		public abstract void UpdateFields();
+        public virtual void MoveDown(int battlefieldHeight)
         {
-            Location = location;
-            Width = w;
-            Height = h;
-            Rotation = 0;
-        }
-        public void MoveDown(int battlefieldHeight)
-        {
-            if ((Location[1] != battlefieldHeight - 1 && Math.Abs(Rotation % 2) != 1) ||
-                (Location[1] <= battlefieldHeight - 1 - Size && Rotation % 2 == 1))
+            if ((Location[1] != battlefieldHeight - 1 - Offset[Rotation%2,1]))
             {
                 Location[1] += 1;
                 UpdateFields();
             }
         }
-        public void MoveUp()
+        public virtual void MoveUp()
         {
-            if ((Location[1] != 0) || (Location[1] >= 0 + Size))
+            if ((Location[1] -Offset[Rotation % 2, 3] > 0))
             {
                 Location[1] -= 1;
                 UpdateFields();
             }
         }
-        public void MoveRight(int battlefieldWidht)
+        public virtual void MoveRight(int battlefieldWidht)
         {
-            if ((Location[0] != battlefieldWidht - 1 && Rotation % 2 == 1) || (Location[0] + Size <= battlefieldWidht - 1 && Rotation % 2 == 0))
+            if (Location[0] < battlefieldWidht - 1 - Offset[Rotation % 2, 0])
             {
                 Location[0] += 1;
                 UpdateFields();
             }
         }
-        public void MoveLeft()
+        public virtual void MoveLeft()
         {
-            if ((Location[0] != 0) || (Location[0] >= 0 + Size))
-            {
+			if (Location[0] -Offset[Rotation % 2, 2] != 0)
+			{
                 Location[0] -= 1;
                 UpdateFields();
             }
         }
-        public void Rotate()
+        public virtual void Rotate()
         {
             Rotation++;
         }
-        public void Shoot()
-        {
-            //TODO
-        }
+		public virtual void DrawWeapon(int[] location)
+		{
+			if (Uses == 0)
+				return;
+			Console.ForegroundColor = ConsoleColor.DarkBlue;
+			foreach (int[] field in Fields)
+			{
+				Console.SetCursorPosition(field[0]*2+1+location[0], field[1]+location[1] + 1);
+				Console.Write("██");
+			}
+			Console.ResetColor();
+		}
     }
 }

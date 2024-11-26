@@ -6,15 +6,21 @@ namespace Battleships
 {
     internal class Program
     {
-		static int BattlefieldSize = 12;
-        static Battlefield PlayerBf = new Battlefield(BattlefieldSize, [0,12]);
-        static Battlefield AIBf = new Battlefield(BattlefieldSize, [30, 12]);
+		static int BattlefieldSize;
+        static Battlefield PlayerBf;
+        static Battlefield AIBf;
 
-		static AI Svatka = new AI(BattlefieldSize);
+		static List<Weapon> Weapons;
 
-        static int[] SelectedTile = {0, 0};
-        static bool Valid_placement = true;
-        static int[] playerBfLoc = PlayerBf.Location;
+		static AI Svatka;
+		static Player Human;
+
+		static int SonarUses;
+		static int BombardmentUses;
+
+		static int[] SelectedTile;
+        static bool Valid_placement;
+        static int[] playerBfLoc;
         static void Main(string[] args)
         {
 			Console.CursorVisible = false;
@@ -31,7 +37,7 @@ namespace Battleships
 					PlayerInput();
 				}
 				Console.Clear();
-                PlayerBf.DrawBattlefield("Hrac", false);
+                PlayerBf.DrawBattlefield("Hrac", Human.SelectedWeapon.Uses,false);
                 Console.SetCursorPosition(0, 0);
 
 				while (Svatka.Difficulty == 0)
@@ -107,16 +113,21 @@ namespace Battleships
         }
         static void Init()
         {
-            Console.OutputEncoding = System.Text.Encoding.UTF8;
-            PlayerBf.Active = true;
-
+			BattlefieldSize = 12;
+			SonarUses = 4;
+			BombardmentUses = 4;
+			Console.OutputEncoding = System.Text.Encoding.UTF8;
             PlayerBf = new Battlefield(12, [0, 12]);
-            AIBf = new Battlefield(12, [30, 12]);
+			playerBfLoc = PlayerBf.Location;
+			PlayerBf.Active = true;
+			AIBf = new Battlefield(12, [30, 12]);
+			Weapons = new List<Weapon>() { new Cannon(), new Sonar(SonarUses), new Bombardment(BombardmentUses) };
 
-            SelectedTile = [0, 0];
+			SelectedTile = [0, 0];
             Valid_placement = true;
-            Svatka = new AI(BattlefieldSize);
-            Console.Clear();
+            Svatka = new AI(BattlefieldSize, Weapons);
+			Human = new Player(Weapons);
+			Console.Clear();
         }
         static void PlaceRender()
         {
@@ -125,21 +136,20 @@ namespace Battleships
 			Console.WriteLine("Muzete pouzit autofill klavesou Tab\n");
 			Console.WriteLine("Lode se nesmi navzajem prekryvat ani dotykat stranama");
             
-            PlayerBf.DrawBattlefield("Hrac");
+            PlayerBf.DrawBattlefield("Hrac", Human.SelectedWeapon.Uses);
         }
-		
 		static void GameRender()
 		{
             WriteBattleships();
 
             Console.WriteLine("Pomoci sipek, WSAD, enter namirte a strelte");
 			PlayerBf.Location = playerBfLoc;
-			PlayerBf.DrawBattlefield("Hrac", false);
-			AIBf.DrawBattlefield("AI opponent", false, false);
-			AIBf.DrawSelectedField(SelectedTile);
+			PlayerBf.DrawBattlefield("Hrac", Human.SelectedWeapon.Uses, false);
+			AIBf.DrawBattlefield("AI opponent", -1, false, false);
+			Human.SelectedWeapon.DrawWeapon(AIBf.Location);
 
 			PlayerBf.Location = [60, 12];
-			PlayerBf.DrawBattlefield("Pohled AI", false, false);
+			PlayerBf.DrawBattlefield("Pohled AI", Human.SelectedWeapon.Uses, false, false);
 		}
         
         static void PlayerInput()
@@ -185,24 +195,36 @@ namespace Battleships
 				case ConsoleKey.UpArrow:
 					if (SelectedTile[1] != 0)
 						SelectedTile[1] -= 1;
+					Human.SelectedWeapon.MoveUp();
 					break;
 				case ConsoleKey.DownArrow:
 					if (SelectedTile[1] != PlayerBf.Size - 1)
 						SelectedTile[1] += 1;
+					Human.SelectedWeapon.MoveDown(PlayerBf.Size);
 					break;
 				case ConsoleKey.LeftArrow:
 					if (SelectedTile[0] != 0)
 						SelectedTile[0] -= 1;
+					Human.SelectedWeapon.MoveLeft();
 					break;
 				case ConsoleKey.RightArrow:
 					if (SelectedTile[0] != PlayerBf.Size - 1)
 						SelectedTile[0] += 1;
+					Human.SelectedWeapon.MoveRight(PlayerBf.Size);
 					break;
 				case ConsoleKey.Enter:
-					AIBf.DestroyField(SelectedTile);
-					AIGameInput();
+					if(Human.Shoot(SelectedTile, ref AIBf))
+						AIGameInput();
 					break;
-
+				case ConsoleKey.D1:
+					Human.ChangeWeapon(0);
+					break;
+				case ConsoleKey.D2:
+					Human.ChangeWeapon(1);
+					break;
+				case ConsoleKey.D3:
+					Human.ChangeWeapon(2);
+					break;
 			}
 		}
 

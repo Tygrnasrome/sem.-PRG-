@@ -12,11 +12,13 @@ namespace Battleships
         public List<int[]> ShipFields { get; set; }
         public List<int[]> Checkboard { get; set; }
 
-
-        public AI(int size) 
+		public List<Weapon> Weapons { get; set; }
+		public AI(int size, List<Weapon> weapons) 
         {
             ShipFields = new List<int[]>();
             Checkboard = new List<int[]>();
+			Weapons = weapons;
+
             for (int y = 0; y < size; y++)
             {
                 for (int x = 0; x < size/2; x++)

@@ -45,7 +45,7 @@ namespace Battleships
 				}
 			}
 		}
-        public void DrawBattlefield(string headline,bool selecting = true, bool revealed = true)
+        public void DrawBattlefield(string headline, int ammoCount, bool selecting = true, bool revealed = true)
         {
 			SelectedShip.ValidPlacement = true;
             Console.SetCursorPosition(Location[0], Location[1]);
@@ -85,7 +85,22 @@ namespace Battleships
                 Console.Write(" ");
             }
             Console.WriteLine();
-        }
+			Console.SetCursorPosition(Location[0], Location[1] + Size + 3);
+			Console.ForegroundColor = ConsoleColor.White;
+			
+			if(ammoCount != 0)
+				Console.ForegroundColor = ConsoleColor.White;
+			else
+                Console.ForegroundColor = ConsoleColor.DarkGray;
+			Console.Write(" Ammo: ");
+			if(ammoCount<0) 
+				Console.Write('∞');
+			else
+				Console.Write(ammoCount.ToString());
+
+
+
+		}
         public void DrawField(int[] location, bool is_tmp, bool revealed)
         {
 			if (!revealed && !RevealedFields[location[0], location[1]])
