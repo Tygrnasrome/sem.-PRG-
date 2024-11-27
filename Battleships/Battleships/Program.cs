@@ -45,10 +45,12 @@ namespace Battleships
 					WriteBattleships();
 					Console.WriteLine("Zadej obtiznost AI protivnika (1-2)");
 					Console.WriteLine("1 - very easy");
-					Console.WriteLine("2 - normal");
-                    Console.WriteLine("3 - hard");
+					Console.WriteLine("2 - easy");
+					Console.WriteLine("3 - normal");
+                    Console.WriteLine("4 - hard");
+					Console.WriteLine("5 - elite");
 
-                    switch (Console.ReadKey(intercept: true).Key)
+					switch (Console.ReadKey(intercept: true).Key)
 					{
 						case ConsoleKey.D1:
 							Svatka.Difficulty = 1;
@@ -59,7 +61,13 @@ namespace Battleships
                         case ConsoleKey.D3:
                             Svatka.Difficulty = 3;
                             break;
-                        default:
+						case ConsoleKey.D4:
+							Svatka.Difficulty = 4;
+							break;
+						case ConsoleKey.D5:
+							Svatka.Difficulty = 5;
+							break;
+						default:
 							Console.ForegroundColor = ConsoleColor.Red;
 							Console.WriteLine("Nespravny vstup");
 							Console.ResetColor();
