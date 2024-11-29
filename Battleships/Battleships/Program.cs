@@ -6,7 +6,8 @@ namespace Battleships
 {
     internal class Program
     {
-		static int BattlefieldSize;
+#pragma warning disable CS8618 
+        static int BattlefieldSize;
         static Battlefield PlayerBf;
         static Battlefield AIBf;
 
@@ -23,6 +24,7 @@ namespace Battleships
 		static Phase GamePhase;
 		static SetDifficulty DifficultySet;
 		static Phase EndPhase;
+#pragma warning restore CS8618 
         static void Main(string[] args)
         {
 			Console.CursorVisible = false;

@@ -155,7 +155,6 @@ namespace Battleships
 			}
 			int[] maxValueLocation =new int[2];
 			int maxValue = 0;
-			int i= 0;
 
 			for (int y = 1; y < PlayerBf.Size - 1; y++)
 			{

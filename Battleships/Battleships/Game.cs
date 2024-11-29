@@ -9,11 +9,11 @@ namespace Battleships
 {
     internal class Game : Phase
     {
-        public Player Human { get; set; }
-        public AI AIplayer { get; set; }
-        static int[] PlayerLoc;
-        public Battlefield AiCopy;
-        public Battlefield PlayerCopy;
+        private Player Human { get; set; }
+        private AI AIplayer { get; set; }
+        private int[] PlayerLoc;
+        private Battlefield AiCopy;
+        private Battlefield PlayerCopy;
         public Game(ref Battlefield player, ref Battlefield ai, ref Player human, ref AI aiplayer) : base(ref player, ref ai)
         {
             Player = player;
@@ -21,6 +21,8 @@ namespace Battleships
             Human = human;
             AIplayer = aiplayer;
             PlayerLoc = player.Location;
+            AiCopy = Ai;
+            PlayerCopy = Player;
         }
         public override bool isCompleted { get; set; }
         public override void Init()
