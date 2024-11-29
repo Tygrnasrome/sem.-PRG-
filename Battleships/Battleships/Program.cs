@@ -23,6 +23,7 @@ namespace Battleships
 		static Phase GamePhase;
 		static SetDifficulty DifficultySet;
 		static Phase EndPhase;
+		static Program() {}
         static void Main(string[] args)
         {
 			Console.CursorVisible = false;
