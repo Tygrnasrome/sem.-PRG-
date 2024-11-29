@@ -12,7 +12,6 @@ namespace Battleships
         public int Size { get; set; }
         public int[] Location { get; set; }
         public char[,] Field { get; set; }
-        public bool Active { get; set; }
         static bool Valid_tiles { get; set; }
         public Ship SelectedShip { get; set; }
 		public int SelectedShipNum { get; set; }
@@ -23,7 +22,6 @@ namespace Battleships
             Field = new char[size,size];
 			RevealedFields = new bool[size, size];
 			Size = size;
-            Active = false;
             Valid_tiles = true;
             Location = location;
             Ships = new Ship[5] {new(5, [0, 0]), new(4, [0, 0]), new(3, [0, 0]), new(3, [0, 0]), new(2, [0, 0])};

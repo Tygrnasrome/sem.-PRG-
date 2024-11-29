@@ -116,7 +116,7 @@ namespace Battleships
 		}
 		public void BrutalAI(ref Battlefield PlayerBf)
 		{
-			//navic od predchozich AI vyuziva strategicky zbrane sonar a bomb
+			//navic od predchozich AI vyuziva strategicky zbran bombardment
 			findShipRotations(ref PlayerBf);
 			if(BombardmentShoot(ref PlayerBf)) return;
 			if (NearShipShoot(ref PlayerBf)) return;
@@ -214,7 +214,6 @@ namespace Battleships
 					value += BombBorderValue(x, y, offsetX + 3, offsetY - 1, ref PlayerBf);
 				}
 			}
-
 					return value;
         }
 		public int BombBorderValue(int x, int y, int offsetX, int offsetY, ref Battlefield PlayerBf)
