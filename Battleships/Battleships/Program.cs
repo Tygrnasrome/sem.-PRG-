@@ -25,6 +25,7 @@ namespace Battleships
 		static SetDifficulty DifficultySet;
 		static Phase EndPhase;
 #pragma warning restore CS8618 
+
         static void Main(string[] args)
         {
 			Console.CursorVisible = false;
