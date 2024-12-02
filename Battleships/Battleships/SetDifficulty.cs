@@ -32,7 +32,7 @@ namespace Battleships
             isCompleted = false;
             Console.SetCursorPosition(0, 0);
             WriteBattleships();
-            Console.WriteLine("Zadej obtiznost AI protivnika (1-2)");
+            Console.WriteLine("Zadej obtiznost AI protivnika (1-5)");
             Console.WriteLine("1 - very easy");
             Console.WriteLine("2 - easy");
             Console.WriteLine("3 - normal");

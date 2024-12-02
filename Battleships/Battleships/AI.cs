@@ -114,16 +114,17 @@ namespace Battleships
 			if (SpecialWeaponShoot(ref PlayerBf, Weapons[3])) return;
 			CheckboardShoot(ref PlayerBf);
 		}
-		public void BrutalAI(ref Battlefield PlayerBf)
-		{
-			//navic od predchozich AI vyuziva strategicky zbran bombardment
-			findShipRotations(ref PlayerBf);
-			if(BombardmentShoot(ref PlayerBf)) return;
-			if (NearShipShoot(ref PlayerBf)) return;
-			if (SpecialWeaponShoot(ref PlayerBf, Weapons[1])) return;
-			if (SpecialWeaponShoot(ref PlayerBf, Weapons[3])) return;
-			CheckboardShoot(ref PlayerBf);
-		}
+// BrutalAI TODO, kein Zeit, enschuldigung
+		//public void BrutalAI(ref Battlefield PlayerBf)
+		//{
+		//	//navic od predchozich AI vyuziva strategicky zbran bombardment
+		//	findShipRotations(ref PlayerBf);
+		//	if(BombardmentShoot(ref PlayerBf)) return;
+		//	if (NearShipShoot(ref PlayerBf)) return;
+		//	if (SpecialWeaponShoot(ref PlayerBf, Weapons[1])) return;
+		//	if (SpecialWeaponShoot(ref PlayerBf, Weapons[3])) return;
+		//	CheckboardShoot(ref PlayerBf);
+		//}
 		public bool BombardmentShoot(ref Battlefield PlayerBf)
 		{
 			if (Weapons[2].Uses == 0)
